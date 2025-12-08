@@ -1,6 +1,6 @@
-#id1:
-#name1:
-#username1:
+#id1: 212287205
+#name1: Ilia Gorlitsky 
+#username1:iliyag
 #id2:
 #name2:
 #username2:
@@ -17,13 +17,21 @@ class AVLNode(object):
 	@param value: data of your node
 	"""
 	def __init__(self, key, value):
-		self.key = key
-		self.value = value
-		self.left = None
-		self.right = None
-		self.parent = None
-		self.height = -1
+		if key is not None:
+			self.key = key
+			self.value = value
+			self.left = AVLNode(None, None)
+			self.left.parent = self
+			self.right = AVLNode(None, None)
+			self.right.parent = self
+			self.height = 0
+		else:
+			self.key = None
+			self.value = None
+			self.height = -1
 		
+		self.parent = None
+	
 
 	"""returns whether self is not a virtual node 
 
@@ -31,7 +39,8 @@ class AVLNode(object):
 	@returns: False if self is a virtual node, True otherwise.
 	"""
 	def is_real_node(self):
-		return False
+		return True if self.height != -1 else False 
+		
 
 
 """
@@ -44,7 +53,7 @@ class AVLTree(object):
 	Constructor, you are allowed to add more fields.
 	"""
 	def __init__(self):
-		self.root = None
+		self.root = AVLNode(None,None)
 
 
 	"""searches for a node in the dictionary corresponding to the key (starting at the root)
@@ -156,15 +165,27 @@ class AVLTree(object):
 	@returns: the maximal node, None if the dictionary is empty
 	"""
 	def max_node(self):
-		return None
+		n = self.root
+		if not n.is_real_node():
+			return None
+		while n.right.is_real_node():
+			n = n.right
+		return n
+
 
 	"""returns the number of items in dictionary 
 
 	@rtype: int
 	@returns: the number of items in dictionary 
 	"""
-	def size(self):
-		return -1	
+	def size(self):	
+		
+		def size_rec(n):
+			if not n.is_real_node():
+				return 0
+			return 1 + size_rec(n.left) + size_rec(n.right)
+		
+		return size_rec(self.root)	
 
 
 	"""returns the root of the tree representing the dictionary
@@ -173,4 +194,4 @@ class AVLTree(object):
 	@returns: the root, None if the dictionary is empty
 	"""
 	def get_root(self):
-		return None
+		return None if not self.root.is_real_node() else self.root
