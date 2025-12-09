@@ -79,7 +79,51 @@ class AVLTree(object):
 	def finger_search(self, key):
 		return None, -1
 
+	def rotate_left(self, a):
+		b = a.right               
+		b.parent = a.parent
+		a.parent = b        
+			# update parent's child pointer
+		if b.parent is None: # a is originally a root
+			self.root = b
+		elif a.key < b.parent.key: 
+			b.parent.left = b
+		else:
+			b.parent.right = b
+		
+		# update child's pointer
+		a.right = b.left          
+		a.right.parent = a
+		b.left = a
+		
+		# update height field
+		a.height = 1 + max(a.left.height, a.right.height)
+		b.height = 1 + max(b.left.height, b.right.height)
 
+	def rotate_right(self, a):
+		b = a.left
+		b.parent = a.parent
+		a.parent = b
+		
+		# update parent's child pointer
+		if b.parent is None: # a is originally a root
+			self.root = b
+		elif a.key < b.parent.key:
+			b.parent.left = b
+		else:
+			b.parent.right = b		
+		
+		# update child's pointer
+		a.left = b.right
+		a.left.parent = a
+		b.right = a
+		
+		# update height field
+		a.height = 1 + max(a.left.height, a.right.height)
+		b.height = 1 + max(b.left.height, b.right.height)
+
+
+	
 	"""inserts a new node into the dictionary with corresponding key and value (starting at the root)
 
 	@type key: int
@@ -92,8 +136,83 @@ class AVLTree(object):
 	e is the number of edges on the path between the starting node and new node before rebalancing,
 	and h is the number of PROMOTE cases during the AVL rebalancing
 	"""
+
+	
 	def insert(self, key, val):
-		return None, -1, -1
+		e = 0
+		h = 0
+		n = self.root
+		x = AVLNode(key, val) 
+		
+		# case of an empty tree
+		if not n.is_real_node(): 
+			self.root = x
+			return x, 0, 0
+		
+		# first stage - regular insert
+		while n.is_real_node():
+			parent = n
+			if key < n.key:
+				n = n.left
+			elif key > n.key:
+				n = n.right
+			else: # key already exists, just change value
+				n.value = val
+				return n, e, 0 
+			e += 1
+		
+		# we've found the parent, check if x should be on the right or left side
+		x.parent = parent
+		if parent.key < key:
+			parent.right = x
+		else:
+			parent.left = x
+		
+		# balancing the tree and updating height field of the nodes
+		n = x
+		while n.parent is not None and n.is_real_node(): # worst case we get to the root -  we want be able to get there
+			n = n.parent
+			new_height = 1 + max(n.left.height, n.right.height)
+			bf = n.left.height - n.right.height
+			
+			if new_height == n.height:
+				return x, e, h
+			else:
+				n.height = new_height # fix current height 
+				h += 1
+				
+				if bf == -2: # 1st case of imbalance
+					right_son = n.right
+					bf_right_son = right_son.left.height - right_son.right.height 
+					
+					if bf_right_son == -1:
+						self.rotate_left(n)
+						h += 1
+					else:
+						self.rotate_right(n.right)
+						self.rotate_left(n)
+						h += 2
+					return x, e, h
+			
+				elif bf == 2: # 2nd case of imbalance
+					left_son = n.left
+					bf_left_son = left_son.left.height - left_son.right.height
+					
+					if bf_left_son == 1: 
+						self.rotate_right(n)
+						h += 1
+					else: 
+						self.rotate_left(n.left)
+						self.rotate_right(n)
+						h += 2
+					return x, e, h
+					
+		return x, e, h
+					
+			
+			
+		
+		
 
 
 	"""inserts a new node into the dictionary with corresponding key and value, starting at the max
