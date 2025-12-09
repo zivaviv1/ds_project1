@@ -171,7 +171,6 @@ class AVLTree(object):
 	and h is the number of PROMOTE cases during the AVL rebalancing
 	"""
 
-
 	def insert(self, key, val):
 		e = 0
 		h = 0
@@ -262,7 +261,97 @@ class AVLTree(object):
 	and h is the number of PROMOTE cases during the AVL rebalancing
 	"""
 	def finger_insert(self, key, val):
-		return None, -1, -1
+		new_node = AVLNode(key, val)
+		e = 0
+		h = 0
+		n = self.max_node_pointer
+		# --- Case 1: Empty tree ---
+		if not n.is_real_node(): 
+			self.root = new_node
+			self.max_node_pointer = new_node
+			self.tree_size += 1
+			return new_node, 0, 0
+
+		# --- Case 2: Insert as new max ---
+		if key > n.key: 
+			n.right = new_node
+			new_node.parent = n
+			self.max_node_pointer = new_node
+			self.tree_size += 1
+			return new_node, e, 0
+
+		# --- Case 3: General case ---
+		# Move up the tree until we find a node with key less than or equal to key
+		while n.parent is not None and key < n.key:
+			n = n.parent
+			e += 1
+   
+		# Now perform a regular insert starting from node n
+		parent = n
+		current = n
+		while current.is_real_node():
+			parent = current
+			if key < current.key:
+				current = current.left	
+			elif key > current.key:	
+				current = current.right
+			else: # key already exists, just change value
+				current.value = val
+				return current, e, 0
+			e += 1
+   
+		# we've found the parent, check if x should be on the right or left side
+		new_node.parent = parent			
+		if key < parent.key:
+			parent.left = new_node
+		else:
+			parent.right = new_node
+
+		# update max_node_pointer if needed
+		if key > self.max_node_pointer.key:
+			self.max_node_pointer = new_node
+
+		self.tree_size += 1
+
+		#TODO: Start fixing heights and rebalancing from that node up to the root
+		n = new_node
+		while n.parent is not None and n.is_real_node(): # worst case we get to the root -  we want be able to get there
+			n = n.parent
+			new_height = 1 + max(n.left.height, n.right.height)
+			bf = n.left.height - n.right.height
+			
+			if new_height == n.height:
+				return new_node, e, h
+			else:
+				n.height = new_height # fix current height 
+				h += 1
+				
+				if bf == -2: # 1st case of imbalance
+					right_son = n.right
+					bf_right_son = right_son.left.height - right_son.right.height 
+					
+					if bf_right_son == -1:
+						self.rotate_left(n)
+						h += 1
+					else:
+						self.rotate_right(n.right)
+						self.rotate_left(n)
+						h += 2
+					return new_node, e, h
+			
+				elif bf == 2: # 2nd case of imbalance
+					left_son = n.left
+					bf_left_son = left_son.left.height - left_son.right.height
+					
+					if bf_left_son == 1: 
+						self.rotate_right(n)
+						h += 1
+					else: 
+						self.rotate_left(n.left)
+						self.rotate_right(n)
+						h += 2
+					return new_node, e, h
+		return new_node, e, h
 
 
 	"""deletes node from the dictionary
