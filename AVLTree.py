@@ -180,6 +180,8 @@ class AVLTree(object):
 		# case of an empty tree
 		if not n.is_real_node(): 
 			self.root = x
+			self.max_node_pointer = x
+			self.tree_size += 1
 			return x, 0, 0
 		
 		# first stage - regular insert
@@ -200,7 +202,12 @@ class AVLTree(object):
 			parent.right = x
 		else:
 			parent.left = x
-		
+   
+		# update max_node_pointer if needed
+		if key > self.max_node_pointer.key:
+			self.max_node_pointer = x
+
+		self.tree_size += 1
 		# balancing the tree and updating height field of the nodes
 		n = x
 		while n.parent is not None and n.is_real_node(): # worst case we get to the root -  we want be able to get there
@@ -277,35 +284,34 @@ class AVLTree(object):
 			n.right = new_node
 			new_node.parent = n
 			self.max_node_pointer = new_node
-			self.tree_size += 1
-			return new_node, e, 0
 
-		# --- Case 3: General case ---
-		# Move up the tree until we find a node with key less than or equal to key
-		while n.parent is not None and key < n.key:
-			n = n.parent
-			e += 1
-   
-		# Now perform a regular insert starting from node n
-		parent = n
-		current = n
-		while current.is_real_node():
-			parent = current
-			if key < current.key:
-				current = current.left	
-			elif key > current.key:	
-				current = current.right
-			else: # key already exists, just change value
-				current.value = val
-				return current, e, 0
-			e += 1
-   
-		# we've found the parent, check if x should be on the right or left side
-		new_node.parent = parent			
-		if key < parent.key:
-			parent.left = new_node
 		else:
-			parent.right = new_node
+			# --- Case 3: General case ---
+			# Move up the tree until we find a node with key less than or equal to key
+			while n.parent is not None and key < n.key:
+				n = n.parent
+				e += 1
+	
+			# Now perform a regular insert starting from node n
+			parent = n
+			current = n
+			while current.is_real_node():
+				parent = current
+				if key < current.key:
+					current = current.left	
+				elif key > current.key:	
+					current = current.right
+				else: # key already exists, just change value
+					current.value = val
+					return current, e, 0
+				e += 1
+	
+			# we've found the parent, check if x should be on the right or left side
+			new_node.parent = parent			
+			if key < parent.key:
+				parent.left = new_node
+			else:
+				parent.right = new_node
 
 		# update max_node_pointer if needed
 		if key > self.max_node_pointer.key:
