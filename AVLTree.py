@@ -414,7 +414,7 @@ class AVLTree(object):
 	"""
 	# [ZIV] changed to use self.max_node_pointer
 	def max_node(self):
-		return None if not self.max_node.is_real_node() else self.max_node_pointer
+		return None if not self.max_node_pointer.is_real_node() else self.max_node_pointer
 		# n = self.root
 		# if not n.is_real_node():
 		# 	return None
