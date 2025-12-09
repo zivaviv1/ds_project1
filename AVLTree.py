@@ -54,6 +54,10 @@ class AVLTree(object):
 	"""
 	def __init__(self):
 		self.root = AVLNode(None,None)
+		self.max_node_pointer = self.root
+		self.tree_size = 0
+  
+	
 
 
 	"""searches for a node in the dictionary corresponding to the key (starting at the root)
@@ -64,9 +68,20 @@ class AVLTree(object):
 	@returns: a tuple (x,e) where x is the node corresponding to key (or None if not found),
 	and e is the number of edges on the path between the starting node and ending node+1.
 	"""
-	def search(self, key):
-		return None, -1
 
+	def search_rec(self, n, key, e):
+		if not n.is_real_node():
+			return None, e
+		if n.key == key:
+			return n, e
+		elif key < n.key:
+			return self.search_rec(n.left, key, e+1)
+		else:
+			return self.search_rec(n.right, key, e+1)
+     
+	def search(self, key):
+		# Start searching from the root
+		return self.search_rec(self.root, key, 0)
 
 	"""searches for a node in the dictionary corresponding to the key, starting at the max
         
@@ -77,7 +92,26 @@ class AVLTree(object):
 	and e is the number of edges on the path between the starting node and ending node+1.
 	"""
 	def finger_search(self, key):
-		return None, -1
+		e = 0
+		finger = self.max_node_pointer
+		# Case 1 - key is at the finger
+		if key == finger.key:
+			return finger, e
+		# Case 2 - key is greater than finger's key (INVALID CASE)
+		if key > finger.key:
+			return None, e + 1
+
+		# Case 3 - key is less than finger's key. Move up the tree 
+  		# until we find a node with key less than or equal to key
+		node = finger
+		while node.parent is not None and key < node.key:
+			node = node.parent
+			e += 1
+		return self.search_rec(node, key, e)
+		
+		
+			
+
 
 	def rotate_left(self, a):
 		b = a.right               
@@ -137,7 +171,7 @@ class AVLTree(object):
 	and h is the number of PROMOTE cases during the AVL rebalancing
 	"""
 
-	
+
 	def insert(self, key, val):
 		e = 0
 		h = 0
@@ -283,13 +317,15 @@ class AVLTree(object):
 	@rtype: AVLNode
 	@returns: the maximal node, None if the dictionary is empty
 	"""
+	# [ZIV] changed to use self.max_node_pointer
 	def max_node(self):
-		n = self.root
-		if not n.is_real_node():
-			return None
-		while n.right.is_real_node():
-			n = n.right
-		return n
+		return None if not self.max_node.is_real_node() else self.max_node_pointer
+		# n = self.root
+		# if not n.is_real_node():
+		# 	return None
+		# while n.right.is_real_node():
+		# 	n = n.right
+		# return n
 
 
 	"""returns the number of items in dictionary 
@@ -297,14 +333,15 @@ class AVLTree(object):
 	@rtype: int
 	@returns: the number of items in dictionary 
 	"""
+ # [ZIV] changed to use self.tree_size
 	def size(self):	
+		return self.tree_size
+		# def size_rec(n):
+		# 	if not n.is_real_node():
+		# 		return 0
+		# 	return 1 + size_rec(n.left) + size_rec(n.right)
 		
-		def size_rec(n):
-			if not n.is_real_node():
-				return 0
-			return 1 + size_rec(n.left) + size_rec(n.right)
-		
-		return size_rec(self.root)	
+		# return size_rec(self.root)	
 
 
 	"""returns the root of the tree representing the dictionary
