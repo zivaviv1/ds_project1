@@ -380,8 +380,98 @@ class AVLTree(object):
 	@pre: all keys in self are smaller than key and all keys in tree2 are larger than key,
 	or the opposite way
 	"""
+
 	def join(self, tree2, key, val):
-		return
+			# find the tallest tree & who has the smaller values 
+			h_self = self.root.height if self.root.is_real_node() else -1
+			h_tree2 = tree2.root.height if tree2.root.is_real_node() else -1
+			
+			T_high = self if h_self > h_tree2 else tree2
+			T_low = tree2 if T_high == self else self
+			
+			# determine which tree has smaller keys 
+			if self.root.is_real_node() and self.root.key > key:
+				T_r = self
+				T_l = tree2
+			else:
+				T_r = tree2
+				T_l = self
+
+			x = AVLNode(key, val)
+
+			# Case 1: The tree with smaller values is the shorter one
+			if T_l == T_low: 
+				x.left = T_l.root
+				T_l.root.parent = x
+				
+				n = T_high.root
+				target_h = T_l.root.height + 1 if T_l.root.is_real_node() else 0
+				
+				# descend to the left side of the high tree
+				while n.height > target_h:
+					n = n.left
+				
+				p = n.parent 
+				x.right = n 
+				n.parent = x
+				
+				x.parent = p 
+				if p is None: # n was the root
+					self.root = x
+				else:
+					p.left = x
+
+			# Case 2: The tree with larger values is the shorter one
+			else: 
+				x.right = T_r.root
+				T_r.root.parent = x
+				
+				n = T_high.root
+				target_h = T_r.root.height + 1 if T_r.root.is_real_node() else 0
+				
+				# descend to the right side of the high tree
+				while n.height > target_h:
+					n = n.right
+				
+				p = n.parent 
+				x.left = n 
+				n.parent = x
+				
+				x.parent = p
+				if p is None: # n was the root
+					self.root = x
+				else:
+					p.right = x
+
+			# Ensure self.root points to the correct new root if tree2 was taller
+			if T_high == tree2 and self.root != x:
+				self.root = tree2.root
+				
+			tree2.root = AVLNode(None, None) # Clear tree2
+
+			# Rebalance from x upwards
+			n = x
+			while n is not None and n.is_real_node():
+				n.height = 1 + max(n.left.height, n.right.height)
+				bf = n.left.height - n.right.height
+				
+				if abs(bf) > 1:
+					if bf == 2:
+						if n.left.left.height >= n.left.right.height:
+							self.rotate_right(n)
+						else:
+							self.rotate_left(n.left)
+							self.rotate_right(n)
+					elif bf == -2:
+						if n.right.right.height >= n.right.left.height:
+							self.rotate_left(n)
+						else:
+							self.rotate_right(n.right)
+							self.rotate_left(n)
+				
+				n = n.parent
+
+			return 
 
 
 	"""splits the dictionary at a given node
@@ -446,3 +536,4 @@ class AVLTree(object):
 	"""
 	def get_root(self):
 		return None if not self.root.is_real_node() else self.root
+
