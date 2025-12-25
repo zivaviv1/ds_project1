@@ -15,10 +15,7 @@ tree.insert(12, 'i')
 tree.insert(17, 'j')
 tree.insert(22, 'k')
 trees = tree.split(10)
-trees[0].print_tree()
-trees[1].print_tree()
-tree.join(trees[0], x, 'x')
-tree.print_tree()
+
 # class TestAVLTree(unittest.TestCase):
 #     def test_empty_tree_properties(self):
 #         t = AVLTree()
