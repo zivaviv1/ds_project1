@@ -360,13 +360,79 @@ class AVLTree(object):
 		return new_node, e, h
 
 
-	"""deletes node from the dictionary
+	def split(self, node):
+		"""
+		splits the dictionary at a given node
 
-	@type node: AVLNode
-	@pre: node is a real pointer to a node in self
-	"""
-	def delete(self, node):
-		return	
+		@type node: AVLNode
+		@pre: node is in self
+		@param node: the node in the dictionary to be used for the split
+		@rtype: (AVLTree, AVLTree)
+		@returns: (left_tree, right_tree)
+		"""
+
+		# Initialize the two resulting trees
+		left_tree = AVLTree()
+		right_tree = AVLTree()
+
+		# Detach node's children
+		if node.left.is_real_node():
+			left_tree.root = node.left
+			left_tree.root.parent = None
+		else:
+			left_tree.root = AVLNode(None, None)
+
+		if node.right.is_real_node():
+			right_tree.root = node.right
+			right_tree.root.parent = None
+		else:
+			right_tree.root = AVLNode(None, None)
+
+		# Disconnect node completely
+		parent = node.parent
+		curr = node
+
+		node.left = AVLNode(None, None)
+		node.right = AVLNode(None, None)
+		node.parent = None
+
+		# Walk upward and join along the path
+		while parent is not None:
+			if curr == parent.left:
+				# parent.key and parent.right belong to RIGHT tree
+				temp = AVLTree()
+				if parent.right.is_real_node():
+					temp.root = parent.right
+					temp.root.parent = None
+				else:
+					temp.root = AVLNode(None, None)
+
+				right_tree.join(
+					temp,
+					parent.key,
+					parent.value
+				)
+
+			else:
+				# parent.key and parent.left belong to LEFT tree
+				temp = AVLTree()
+				if parent.left.is_real_node():
+					temp.root = parent.left
+					temp.root.parent = None
+				else:
+					temp.root = AVLNode(None, None)
+
+				left_tree.join(
+					temp,
+					parent.key,
+					parent.value
+				)
+
+			curr = parent
+			parent = parent.parent
+
+		return left_tree, right_tree
+
 
 	
 	"""joins self with item and another AVLTree
@@ -485,7 +551,68 @@ class AVLTree(object):
 	dictionary larger than node.key.
 	"""
 	def split(self, node):
-		return None, None
+	# Initialize the two resulting trees
+		left_tree = AVLTree()
+		right_tree = AVLTree()
+
+		# Detach node's children
+		if node.left.is_real_node():
+			left_tree.root = node.left
+			left_tree.root.parent = None
+		else:
+			left_tree.root = AVLNode(None, None)
+
+		if node.right.is_real_node():
+			right_tree.root = node.right
+			right_tree.root.parent = None
+		else:
+			right_tree.root = AVLNode(None, None)
+
+		# Disconnect node completely
+		parent = node.parent
+		curr = node
+
+		node.left = AVLNode(None, None)
+		node.right = AVLNode(None, None)
+		node.parent = None
+
+		# Walk upward and join along the path
+		while parent is not None:
+			if curr == parent.left:
+				# parent.key and parent.right belong to RIGHT tree
+				temp = AVLTree()
+				if parent.right.is_real_node():
+					temp.root = parent.right
+					temp.root.parent = None
+				else:
+					temp.root = AVLNode(None, None)
+
+				right_tree.join(
+					temp,
+					parent.key,
+					parent.value
+				)
+
+			else:
+				# parent.key and parent.left belong to LEFT tree
+				temp = AVLTree()
+				if parent.left.is_real_node():
+					temp.root = parent.left
+					temp.root.parent = None
+				else:
+					temp.root = AVLNode(None, None)
+
+				left_tree.join(
+					temp,
+					parent.key,
+					parent.value
+				)
+
+			curr = parent
+			parent = parent.parent
+
+		return left_tree, right_tree
+
 
 	
 	"""returns an array representing dictionary 
@@ -496,7 +623,7 @@ class AVLTree(object):
 	def avl_to_array(self):
 		return None
 
-
+	
 	"""returns the node with the maximal key in the dictionary
 
 	@rtype: AVLNode
@@ -537,3 +664,12 @@ class AVLTree(object):
 	def get_root(self):
 		return None if not self.root.is_real_node() else self.root
 
+	def print_tree(self):
+		"""Prints the AVL tree sideways (right to left)"""
+		def print_node(node, level=0):
+			if node.is_real_node():
+				print_node(node.right, level + 1)
+				print(' ' * 4 * level + '->', node.key)
+				print_node(node.left, level + 1)
+
+		print_node(self.root)
