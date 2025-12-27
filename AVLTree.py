@@ -1,6 +1,6 @@
 #id1: 212287205
 #name1: Ilia Gorlitsky 
-#username1:iliyag
+#username1: iliyag
 #id2:
 #name2:
 #username2:
@@ -252,9 +252,6 @@ class AVLTree(object):
 		return x, e, h
 					
 			
-			
-		
-		
 
 
 	"""inserts a new node into the dictionary with corresponding key and value, starting at the max
@@ -461,9 +458,6 @@ class AVLTree(object):
 					self.rotate_right(n.right)
 					self.rotate_left(n)
 
-			if n.height == old_height:
-				break
-
 			n = n.parent
 
 	def split(self, node):
@@ -549,19 +543,7 @@ class AVLTree(object):
 	"""
 
 	def join(self, tree2, key, val):
-			# Helper function to calculate size of a tree
-			def calc_size(node):
-				if not node.is_real_node():
-					return 0
-				return 1 + calc_size(node.left) + calc_size(node.right)
 			
-			# Helper function to find max node
-			def find_max(node):
-				if not node.is_real_node():
-					return AVLNode(None, None)
-				while node.right.is_real_node():
-					node = node.right
-				return node
 			# find the tallest tree & who has the smaller values 
 			h_self = self.root.height if self.root.is_real_node() else -1
 			h_tree2 = tree2.root.height if tree2.root.is_real_node() else -1
@@ -570,7 +552,7 @@ class AVLTree(object):
 			T_low = tree2 if T_high == self else self
 			
 			# handle empty trees
-			if not self.root.is_real_node() and not	 tree2.root.is_real_node():
+			if not self.root.is_real_node() and not	tree2.root.is_real_node():
 				x = AVLNode(key,val)
 				self.root = x
 				self.tree_size = 1
@@ -596,11 +578,11 @@ class AVLTree(object):
 			else:
 				# both trees are non-empty,
 				if self.root.key > key: 
-					T_l = self
-					T_r = tree2
-				else:
 					T_l = tree2
 					T_r = self
+				else:
+					T_l = self
+					T_r = tree2
      
 			x = AVLNode(key, val)
 
@@ -662,12 +644,6 @@ class AVLTree(object):
 					else:
 						p.right = x
 
-			# Ensure self.root points to the correct new root if tree2 was taller
-			if T_high == tree2 and self.root != x:
-				self.root = tree2.root
-				
-			#tree2.root = AVLNode(None, None) # Clear tree2
-
 			# Rebalance from x upwards
 			n = x
 			while n is not None and n.is_real_node():
@@ -689,10 +665,22 @@ class AVLTree(object):
 							self.rotate_left(n)
 				
 				n = n.parent
+			
 			# Update tree size
-			self.tree_size = calc_size(self.root)
+			self.tree_size = self.tree_size + tree2.tree_size + 1 
+			
 			# Update max_node_pointer
-			self.max_node_pointer = find_max(self.root)
+			if T_r.root.is_real_node():
+				self.max_node_pointer = T_r.max_node_pointer
+			else:
+				self.max_node_pointer = x
+			
+			# Update root pointer
+			new_root = x
+			while new_root.parent is not None:
+				new_root = new_root.parent
+			self.root = new_root
+	
 			tree2.root = AVLNode(None, None) # Clear tree2
 			tree2.tree_size = 0
 			tree2.max_node_pointer = AVLNode(None, None)
@@ -805,15 +793,9 @@ class AVLTree(object):
 	@rtype: AVLNode
 	@returns: the maximal node, None if the dictionary is empty
 	"""
-	# [ZIV] changed to use self.max_node_pointer
+
 	def max_node(self):
 		return None if not self.max_node_pointer.is_real_node() else self.max_node_pointer
-		# n = self.root
-		# if not n.is_real_node():
-		# 	return None
-		# while n.right.is_real_node():
-		# 	n = n.right
-		# return n
 
 
 	"""returns the number of items in dictionary 
@@ -821,15 +803,9 @@ class AVLTree(object):
 	@rtype: int
 	@returns: the number of items in dictionary 
 	"""
- # [ZIV] changed to use self.tree_size
+
 	def size(self):	
 		return self.tree_size
-		# def size_rec(n):
-		# 	if not n.is_real_node():
-		# 		return 0
-		# 	return 1 + size_rec(n.left) + size_rec(n.right)
-		
-		# return size_rec(self.root)	
 
 
 	"""returns the root of the tree representing the dictionary
